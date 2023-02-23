@@ -12,9 +12,14 @@ from VoiceSpeed import VoiceSpeed
 COLLECTION_MEDIA = '/home/airat/.local/share/Anki2/User 1/collection.media/'
 
 
-def search_file_in_path(phrase_audio: str) -> bool:
+def check_file_in_path(phrase_audio: str) -> bool:
     os.chdir(COLLECTION_MEDIA)
-    return len(glob.glob(phrase_audio)) > 0
+    files = glob.glob(phrase_audio)
+    if len(files) > 0:
+        for file in files:
+            get_size = os.path.getsize(file)
+            return get_size > 10000
+    return False
 
 
 def parse_csv(file_path) -> list[Phrase]:
@@ -55,7 +60,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.AUSTIN_HOPKINS.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.AUSTIN_HOPKINS.value, phrase_audio,
@@ -65,7 +70,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.SHARON_HUANG.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.SHARON_HUANG.value, phrase_audio, phrase.original,
@@ -74,7 +79,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.TIM_CALKNEY.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.TIM_CALKNEY.value, phrase_audio, phrase.original,
@@ -83,7 +88,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.SUSAN_COLE.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.SUSAN_COLE.value, phrase_audio, phrase.original,
@@ -98,7 +103,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=BritishVoice.RYAN_MAGUIRE.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_audio, phrase.original,
@@ -107,7 +112,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=BritishVoice.MIA_MOUNT.value.initials)
-        is_convert_text_to_audio = (not search_file_in_path(
+        is_convert_text_to_audio = (not check_file_in_path(
             phrase_audio)) or phrase_id == regenerate_id or regenerate_all
         if is_convert_text_to_audio:
             convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_audio, phrase.original, VoiceSpeed.NORMAL.value)
@@ -119,42 +124,46 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
 
 def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
-    cookies = {
-        '__stripe_mid': 'c8ce967b-bc46-4bfe-9868-1e2966413147a67190',
-        '__stripe_sid': 'f820178c-e00d-4a4b-b837-ac8d737dc97cff2952',
-        'ACCESS_TOKEN': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndvYmVqYWM0NzZAam9ic2ZlZWwuY29tIiwic3ViIjoiNjNlZTdjNzA5YjA1OWIwM2Q1YjI4ZDg4IiwiaWF0IjoxNjc2NTczODIxLCJleHAiOjE2NzcxNzg2MjF9.WHEzHVSjbt3n9dy_mgfAI8E0J5eqzeribUxIV6Y8k-4',
-    }
+    while True:
+        cookies = {
+            '__stripe_mid': 'c8ce967b-bc46-4bfe-9868-1e2966413147a67190',
+            '__stripe_sid': 'f820178c-e00d-4a4b-b837-ac8d737dc97cff2952',
+            'ACCESS_TOKEN': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndvYmVqYWM0NzZAam9ic2ZlZWwuY29tIiwic3ViIjoiNjNlZTdjNzA5YjA1OWIwM2Q1YjI4ZDg4IiwiaWF0IjoxNjc2NTczODIxLCJleHAiOjE2NzcxNzg2MjF9.WHEzHVSjbt3n9dy_mgfAI8E0J5eqzeribUxIV6Y8k-4',
+        }
 
-    headers = {
-        'authority': 'studio.lovo.ai',
-        'accept': 'application/json, text/plain, */*',
-        'accept-language': 'en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7',
-        'content-type': 'application/json;charset=UTF-8',
-        'dnt': '1',
-        'origin': 'https://studio.lovo.ai',
-        'referer': 'https://studio.lovo.ai/',
-        'sec-ch-ua': '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Linux"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-    }
+        headers = {
+            'authority': 'studio.lovo.ai',
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7',
+            'content-type': 'application/json;charset=UTF-8',
+            'dnt': '1',
+            'origin': 'https://studio.lovo.ai',
+            'referer': 'https://studio.lovo.ai/',
+            'sec-ch-ua': '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+        }
 
-    json_data = {
-        "speaker_id": voice.id,
-        "text": text,
-        "speed": "[{voice_speed},\"false\"]".format(voice_speed=voice_speed),
-        "pause": "0",
-        "emphasis": "[]",
-        "is_custom": False
-    }
+        json_data = {
+            "speaker_id": voice.id,
+            "text": text,
+            "speed": "[{voice_speed},\"false\"]".format(voice_speed=voice_speed),
+            "pause": "0",
+            "emphasis": "[]",
+            "is_custom": False
+        }
 
-    with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
-                       headers=headers) as response:
-        with open(
-                "{collection_media}{phrase_audio}".format(collection_media=COLLECTION_MEDIA, phrase_audio=phrase_audio),
-                "wb") as file:
-            file.write(response.content)
-            file.close()
+        with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
+                           headers=headers) as response:
+            with open(
+                    "{collection_media}{phrase_audio}".format(collection_media=COLLECTION_MEDIA,
+                                                              phrase_audio=phrase_audio),
+                    "wb") as file:
+                file.write(response.content)
+                file.close()
+        if check_file_in_path(phrase_audio):
+            break
