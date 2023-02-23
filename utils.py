@@ -127,8 +127,8 @@ def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
     while True:
         cookies = {
             '__stripe_mid': 'c8ce967b-bc46-4bfe-9868-1e2966413147a67190',
-            '__stripe_sid': 'f820178c-e00d-4a4b-b837-ac8d737dc97cff2952',
-            'ACCESS_TOKEN': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndvYmVqYWM0NzZAam9ic2ZlZWwuY29tIiwic3ViIjoiNjNlZTdjNzA5YjA1OWIwM2Q1YjI4ZDg4IiwiaWF0IjoxNjc2NTczODIxLCJleHAiOjE2NzcxNzg2MjF9.WHEzHVSjbt3n9dy_mgfAI8E0J5eqzeribUxIV6Y8k-4',
+            '__stripe_sid': '02b54afe-d62e-483b-8c0c-89fe97afa6c3208c0f',
+            'ACCESS_TOKEN': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhlY2F0YTUzNDRAd2lmYW1lLmNvbSIsInN1YiI6IjYzZjdjMzJmMzA5YWEzYWE5NGNmMDg2OSIsImlhdCI6MTY3NzE4MTc2NiwiZXhwIjoxNjc3Nzg2NTY2fQ.prxfqSkFgRqxSVqcnywWW52V4xkC7kGxKTJiEj6qa7k',
         }
 
         headers = {
