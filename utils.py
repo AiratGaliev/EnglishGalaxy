@@ -2,6 +2,7 @@ import csv
 import glob
 import os
 import requests
+import configparser
 from phonemizer import phonemize
 from AmericanVoice import AmericanVoice
 from BritishVoice import BritishVoice
@@ -10,6 +11,11 @@ from Voice import Voice
 from VoiceSpeed import VoiceSpeed
 
 COLLECTION_MEDIA = '/home/airat/.local/share/Anki2/User 1/collection.media/'
+config = configparser.ConfigParser()
+config.read('config.ini')
+STRIPE_MID = config['cookies']['stripe_mid']
+STRIPE_SID = config['cookies']['stripe_sid']
+ACCESS_TOKEN = config['cookies']['access_token']
 
 
 def check_file_in_path(phrase_audio: str) -> bool:
@@ -126,9 +132,9 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
     while True:
         cookies = {
-            '__stripe_mid': 'c8ce967b-bc46-4bfe-9868-1e2966413147a67190',
-            '__stripe_sid': '02b54afe-d62e-483b-8c0c-89fe97afa6c3208c0f',
-            'ACCESS_TOKEN': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhlY2F0YTUzNDRAd2lmYW1lLmNvbSIsInN1YiI6IjYzZjdjMzJmMzA5YWEzYWE5NGNmMDg2OSIsImlhdCI6MTY3NzE4MTc2NiwiZXhwIjoxNjc3Nzg2NTY2fQ.prxfqSkFgRqxSVqcnywWW52V4xkC7kGxKTJiEj6qa7k',
+            '__stripe_mid': STRIPE_MID,
+            '__stripe_sid': STRIPE_SID,
+            'ACCESS_TOKEN': ACCESS_TOKEN,
         }
 
         headers = {
