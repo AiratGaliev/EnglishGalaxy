@@ -39,7 +39,7 @@ def parse_csv(file_path) -> list[Phrase]:
 
 
 def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, lesson_id: int, regenerate_id: int,
-                   regenerate_all: bool):
+                   regenerate_all_lesson: bool):
     phrases = parse_csv("/home/airat/Documents/English Galaxy/CSV/" + root_deck_name + " - " + child_deck_name + '.csv')
     phrase_id = 0
     all_string = "#separator:tab\n" \
@@ -67,7 +67,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.AUSTIN_HOPKINS.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.AUSTIN_HOPKINS.value, phrase_audio,
                                   phrase.original,
@@ -77,7 +77,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.SHARON_HUANG.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.SHARON_HUANG.value, phrase_audio, phrase.original,
                                   VoiceSpeed.NORMAL.value)
@@ -86,7 +86,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.TIM_CALKNEY.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.TIM_CALKNEY.value, phrase_audio, phrase.original,
                                   VoiceSpeed.NORMAL.value)
@@ -95,7 +95,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=AmericanVoice.SUSAN_COLE.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(AmericanVoice.SUSAN_COLE.value, phrase_audio, phrase.original,
                                   VoiceSpeed.NORMAL.value)
@@ -110,7 +110,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=BritishVoice.RYAN_MAGUIRE.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_audio, phrase.original,
                                   VoiceSpeed.NORMAL.value)
@@ -119,7 +119,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
                                                     initials=BritishVoice.MIA_MOUNT.value.initials)
         is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all
+            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
         if is_convert_text_to_audio:
             convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_audio, phrase.original, VoiceSpeed.NORMAL.value)
         all_string += voice_string.format(phrase_audio=phrase_audio, name=BritishVoice.MIA_MOUNT.value.name) + "</ul>\n"
