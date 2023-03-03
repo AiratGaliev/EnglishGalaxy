@@ -5,6 +5,8 @@ if __name__ == '__main__':
     lesson_id: int = 0
     regenerate_id: int = 0
     regenerate_all_lesson: bool = False
+    # TODO реализовать логику перегенерации всего уровня
+    regenerate_all_level: bool = False
     try:
         lesson_id = int(input('Enter lesson id:'))
         regenerate_all_lesson = True if input('Regenerate all lesson? y/n (default n):') == 'y' else False
