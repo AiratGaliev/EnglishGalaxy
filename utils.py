@@ -1,27 +1,20 @@
 import csv
 import glob
 import os
+
 import requests
-import configparser
 from phonemizer import phonemize
+
 from AmericanVoice import AmericanVoice
 from BritishVoice import BritishVoice
+from Config import Config
 from Phrase import Phrase
 from Voice import Voice
 from VoiceSpeed import VoiceSpeed
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-COLLECTION_MEDIA = config['directories']['collection_media']
-CSV_FILES = config['directories']['csv_files']
-TXT_FILES = config['directories']['txt_files']
-STRIPE_MID = config['cookies']['stripe_mid']
-STRIPE_SID = config['cookies']['stripe_sid']
-ACCESS_TOKEN = config['cookies']['access_token']
-
 
 def check_file_in_path(phrase_audio: str) -> bool:
-    os.chdir(COLLECTION_MEDIA)
+    os.chdir(Config.COLLECTION_MEDIA.value)
     files = glob.glob(phrase_audio)
     if len(files) > 0:
         for file in files:
@@ -42,7 +35,7 @@ def parse_csv(file_path) -> list[Phrase]:
 
 def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, lesson_id: int, regenerate_id: int,
                    regenerate_all_lesson: bool):
-    phrases = parse_csv(CSV_FILES + root_deck_name + " - " + child_deck_name + '.csv')
+    phrases = parse_csv(Config.CSV_FILES.value + root_deck_name + " - " + child_deck_name + '.csv')
     phrase_id = 0
     all_string = "#separator:tab\n" \
                  "#html:true\n" \
@@ -125,7 +118,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         if is_convert_text_to_audio:
             convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_audio, phrase.original, VoiceSpeed.NORMAL.value)
         all_string += voice_string.format(phrase_audio=phrase_audio, name=BritishVoice.MIA_MOUNT.value.name) + "</ul>\n"
-    with open(TXT_FILES + root_deck_name + " - " + child_deck_name + ".txt", "w") as file:
+    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w") as file:
         file.write(all_string)
         file.close()
 
@@ -133,9 +126,9 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
     while True:
         cookies = {
-            '__stripe_mid': STRIPE_MID,
-            '__stripe_sid': STRIPE_SID,
-            'ACCESS_TOKEN': ACCESS_TOKEN,
+            '__stripe_mid': Config.STRIPE_MID.value,
+            '__stripe_sid': Config.STRIPE_SID.value,
+            'ACCESS_TOKEN': Config.ACCESS_TOKEN.value,
         }
 
         headers = {
@@ -167,7 +160,7 @@ def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
         with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
                            headers=headers) as response:
             with open(
-                    "{collection_media}{phrase_audio}".format(collection_media=COLLECTION_MEDIA,
+                    "{collection_media}{phrase_audio}".format(collection_media=Config.COLLECTION_MEDIA.value,
                                                               phrase_audio=phrase_audio),
                     "wb") as file:
                 file.write(response.content)
