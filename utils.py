@@ -42,8 +42,11 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
                  "#notetype column:1\n" \
                  "#deck column:2\n" \
                  "#tags column:5\n"
+    start_string_child_deck_name = child_deck_name
+    if lesson_id < 10:
+        start_string_child_deck_name = child_deck_name.replace(" ", " 0")
     start_string = "Basic\t{root_deck_name}::{child_deck_name}\t".format(root_deck_name=root_deck_name,
-                                                                         child_deck_name=child_deck_name)
+                                                                         child_deck_name=start_string_child_deck_name)
     voice_string = "<li>[sound:{phrase_audio}]&nbsp;{name}</li>"
     phrase_audio_original = "eg_{level_id}_l_{lesson_id}_phrase_{phrase_id}_{initials}.wav"
     for phrase in phrases:
