@@ -33,6 +33,10 @@ def parse_csv(file_path) -> list[Phrase]:
     return phrases
 
 
+PHRASE_FILE_NAME_TEMPLATE = "eg_{level_id}_l_{lesson_id}_phrase_{phrase_id}_{initials}.wav"
+VOICE_STRING = "<li>[sound:{phrase_file_name}]&nbsp;{name}</li>"
+
+
 def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, lesson_id: int, regenerate_id: int,
                    regenerate_all_lesson: bool):
     phrases = parse_csv(Config.CSV_FILES.value + root_deck_name + " - " + child_deck_name + '.csv')
@@ -47,8 +51,6 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         start_string_child_deck_name = child_deck_name.replace(" ", " 0")
     start_string = "Basic\t{root_deck_name}::{child_deck_name}\t".format(root_deck_name=root_deck_name,
                                                                          child_deck_name=start_string_child_deck_name)
-    voice_string = "<li>[sound:{phrase_audio}]&nbsp;{name}</li>"
-    phrase_audio_original = "eg_{level_id}_l_{lesson_id}_phrase_{phrase_id}_{initials}.wav"
     for phrase in phrases:
         phrase_id = phrase_id + 1
         print("Progress: {:2.1%}".format(phrase_id / len(phrases)))
@@ -62,42 +64,11 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         all_string += translation_original_string + american_string
 
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=AmericanVoice.AUSTIN_HOPKINS.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(AmericanVoice.AUSTIN_HOPKINS.value, phrase_audio,
-                                  phrase.original,
-                                  VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=AmericanVoice.AUSTIN_HOPKINS.value.name)
+        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
+                                    AmericanVoice.TOM_JOSEPH.value)
 
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=AmericanVoice.SHARON_HUANG.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(AmericanVoice.SHARON_HUANG.value, phrase_audio, phrase.original,
-                                  VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=AmericanVoice.SHARON_HUANG.value.name)
-
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=AmericanVoice.TIM_CALKNEY.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(AmericanVoice.TIM_CALKNEY.value, phrase_audio, phrase.original,
-                                  VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=AmericanVoice.TIM_CALKNEY.value.name)
-
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=AmericanVoice.SUSAN_COLE.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(AmericanVoice.SUSAN_COLE.value, phrase_audio, phrase.original,
-                                  VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=AmericanVoice.SUSAN_COLE.value.name)
+        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
+                                    AmericanVoice.SABRINA_INKWELL.value)
 
         british_string = "</ul><br><br>british listen:<br>{british_transcription}<br><ul>".format(
             british_transcription=phonemize(phrase.original, language='en-gb', backend='espeak')).replace('ɹ',
@@ -105,28 +76,29 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
             'ɐ', 'a')
         all_string += british_string
 
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=BritishVoice.RYAN_MAGUIRE.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_audio, phrase.original,
-                                  VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=BritishVoice.RYAN_MAGUIRE.value.name)
+        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
+                                    BritishVoice.RYAN_MAGUIRE.value)
 
-        phrase_audio = phrase_audio_original.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                    initials=BritishVoice.MIA_MOUNT.value.initials)
-        is_convert_text_to_audio = (not check_file_in_path(
-            phrase_audio)) or phrase_id == regenerate_id or regenerate_all_lesson
-        if is_convert_text_to_audio:
-            convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_audio, phrase.original, VoiceSpeed.NORMAL.value)
-        all_string += voice_string.format(phrase_audio=phrase_audio, name=BritishVoice.MIA_MOUNT.value.name) + "</ul>\n"
+        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
+                                    BritishVoice.MIA_MOUNT.value)
+
+        all_string += "</ul>\n"
     with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w") as file:
         file.write(all_string)
         file.close()
 
 
-def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
+def crate_example(level_id: str, lesson_id: int, phrase_id: int, regenerate_all_lesson: bool, regenerate_id: int,
+                  phrase: Phrase, voice: Voice) -> str:
+    phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                        initials=voice.initials)
+    is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id or regenerate_all_lesson
+    if is_convert_tts:
+        convert_text_to_audio(voice, phrase_file_name, phrase.original, VoiceSpeed.NORMAL.value)
+    return VOICE_STRING.format(phrase_file_name=phrase_file_name, name=voice.name)
+
+
+def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_speed: int):
     while True:
         cookies = {
             '__stripe_mid': Config.STRIPE_MID.value,
@@ -163,10 +135,10 @@ def convert_text_to_audio(voice: Voice, phrase_audio, text, voice_speed):
         with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
                            headers=headers) as response:
             with open(
-                    "{collection_media}{phrase_audio}".format(collection_media=Config.COLLECTION_MEDIA.value,
-                                                              phrase_audio=phrase_audio),
+                    "{collection_media}{phrase_file_name}".format(collection_media=Config.COLLECTION_MEDIA.value,
+                                                                  phrase_file_name=phrase_file_name),
                     "wb") as file:
                 file.write(response.content)
                 file.close()
-        if check_file_in_path(phrase_audio):
+        if check_file_in_path(phrase_file_name):
             break

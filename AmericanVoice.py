@@ -4,7 +4,5 @@ from Voice import Voice
 
 
 class AmericanVoice(Enum):
-    AUSTIN_HOPKINS = Voice('Austin Hopkins', 'ah', '6159a26cc4bd0c0019267736')
-    SUSAN_COLE = Voice('Susan Cole', 'sc', '602d06b2b037c400194dffdf')
-    SHARON_HUANG = Voice('Sharon Huang', 'sh', '6061d986ba8e010019928ca5')
-    TIM_CALKNEY = Voice('Tim Calkney', 'tc', '61599b9dc4bd0c0019267734')
+    SABRINA_INKWELL: Voice = Voice('Sabrina Inkwell', 'si', '5ec77831ae1afc001ace8fc9')
+    TOM_JOSEPH: Voice = Voice('Tom Joseph', 'tj', '5ec777c2ae1afc001ace8fc3')
