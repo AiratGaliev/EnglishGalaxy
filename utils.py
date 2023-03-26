@@ -1,5 +1,6 @@
 import csv
 import glob
+import multiprocessing
 import os
 
 import requests
@@ -40,6 +41,11 @@ VOICE_STRING = "<li>[sound:{phrase_file_name}]&nbsp;{name}</li>"
 def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, lesson_id: int, regenerate_id: int,
                    regenerate_all_lesson: bool):
     phrases = parse_csv(Config.CSV_FILES.value + root_deck_name + " - " + child_deck_name + '.csv')
+
+    if regenerate_all_lesson:
+        print("Regenerating all lesson is progress")
+        generate_all_text_to_audio(level_id, lesson_id, phrases)
+
     phrase_id = 0
     all_string = "#separator:tab\n" \
                  "#html:true\n" \
@@ -64,11 +70,20 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
 
         all_string += translation_original_string + american_string
 
-        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
-                                    AmericanVoice.TOM_JOSEPH.value)
+        phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                            initials=AmericanVoice.TOM_JOSEPH.value.initials)
+        is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+        if is_convert_tts:
+            convert_text_to_audio(AmericanVoice.TOM_JOSEPH.value, phrase_file_name, phrase.original)
+        all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=AmericanVoice.TOM_JOSEPH.value.name)
 
-        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
-                                    AmericanVoice.SABRINA_INKWELL.value)
+        phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                            initials=AmericanVoice.SABRINA_INKWELL.value.initials)
+        is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+        if is_convert_tts:
+            convert_text_to_audio(AmericanVoice.SABRINA_INKWELL.value, phrase_file_name, phrase.original)
+        all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
+                                          name=AmericanVoice.SABRINA_INKWELL.value.name)
 
         british_string = "</ul><br><br>british listen:<br>{british_transcription}<br><ul>".format(
             british_transcription=phonemize(phrase.original, language='en-gb', backend='espeak')).replace('ɹ',
@@ -76,11 +91,19 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
             'ɐ', 'a')
         all_string += british_string
 
-        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
-                                    BritishVoice.RYAN_MAGUIRE.value)
+        phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                            initials=BritishVoice.RYAN_MAGUIRE.value.initials)
+        is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+        if is_convert_tts:
+            convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_file_name, phrase.original)
+        all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.RYAN_MAGUIRE.value.name)
 
-        all_string += crate_example(level_id, lesson_id, phrase_id, regenerate_all_lesson, regenerate_id, phrase,
-                                    BritishVoice.MIA_MOUNT.value)
+        phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                            initials=BritishVoice.MIA_MOUNT.value.initials)
+        is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+        if is_convert_tts:
+            convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_file_name, phrase.original)
+        all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.MIA_MOUNT.value.name)
 
         all_string += "</ul>\n"
     with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w") as file:
@@ -88,17 +111,33 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         file.close()
 
 
-def crate_example(level_id: str, lesson_id: int, phrase_id: int, regenerate_all_lesson: bool, regenerate_id: int,
-                  phrase: Phrase, voice: Voice) -> str:
-    phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                        initials=voice.initials)
-    is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id or regenerate_all_lesson
-    if is_convert_tts:
-        convert_text_to_audio(voice, phrase_file_name, phrase.original, VoiceSpeed.NORMAL.value)
-    return VOICE_STRING.format(phrase_file_name=phrase_file_name, name=voice.name)
+def map_convert_text_to_audio(args):
+    phrase_id, level_id, lesson_id, phrases = args
+    phrase = phrases[phrase_id]
+    phrase_id = phrase_id + 1
+    phrase_file_name_tj = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                           initials=AmericanVoice.TOM_JOSEPH.value.initials)
+    phrase_file_name_si = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                           initials=AmericanVoice.SABRINA_INKWELL.value.initials)
+    phrase_file_name_rm = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                           initials=BritishVoice.RYAN_MAGUIRE.value.initials)
+    phrase_file_name_mm = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
+                                                           initials=BritishVoice.MIA_MOUNT.value.initials)
+    convert_text_to_audio(AmericanVoice.TOM_JOSEPH.value, phrase_file_name_tj, phrase.original)
+    convert_text_to_audio(AmericanVoice.SABRINA_INKWELL.value, phrase_file_name_si, phrase.original)
+    convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_file_name_rm, phrase.original)
+    convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_file_name_mm, phrase.original)
 
 
-def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_speed: int):
+def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
+    num_tasks = len(phrases)
+    num_processes = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(processes=num_processes)
+    tasks = [(phrase_id, level_id, lesson_id, phrases) for phrase_id in range(num_tasks)]
+    pool.map(map_convert_text_to_audio, tasks)
+
+
+def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_speed: int = VoiceSpeed.NORMAL.value):
     while True:
         cookies = {
             '__stripe_mid': Config.STRIPE_MID.value,
