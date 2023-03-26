@@ -131,7 +131,7 @@ def map_convert_text_to_audio(args):
 
 def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
     num_tasks = len(phrases)
-    num_processes = multiprocessing.cpu_count()
+    num_processes = multiprocessing.cpu_count() * 12
     pool = multiprocessing.Pool(processes=num_processes)
     tasks = [(phrase_id, level_id, lesson_id, phrases) for phrase_id in range(num_tasks)]
     pool.map(map_convert_text_to_audio, tasks)
