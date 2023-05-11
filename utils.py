@@ -26,7 +26,7 @@ def check_file_in_path(phrase_audio: str) -> bool:
 
 def parse_csv(file_path) -> list[Phrase]:
     phrases: list[Phrase] = []
-    with open(file_path) as csv_file:
+    with open(file_path, encoding='utf-8') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             phrase = Phrase(row[0], row[1])
@@ -106,7 +106,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.MIA_MOUNT.value.name)
 
         all_string += "</ul>\n"
-    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w") as file:
+    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w", encoding='utf-8') as file:
         file.write(all_string)
         file.close()
 
