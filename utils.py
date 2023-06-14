@@ -106,7 +106,8 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
         all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.MIA_MOUNT.value.name)
 
         all_string += "</ul>\n"
-    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w", encoding='utf-8') as file:
+    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w",
+              encoding='utf-8') as file:
         file.write(all_string)
         file.close()
 
@@ -131,7 +132,8 @@ def map_convert_text_to_audio(args):
 
 def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
     num_tasks = len(phrases)
-    num_processes = multiprocessing.cpu_count() * 4
+    num_processes_mult: int = int(Config.NUM_PROCESSES_MULT.value)
+    num_processes = multiprocessing.cpu_count() * num_processes_mult
     pool = multiprocessing.Pool(processes=num_processes)
     tasks = [(phrase_id, level_id, lesson_id, phrases) for phrase_id in range(num_tasks)]
     pool.map(map_convert_text_to_audio, tasks)

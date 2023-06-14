@@ -22,6 +22,7 @@ class Config(Enum):
     COLLECTION_MEDIA = os.path.expanduser('~') + _get_config()[_get_path_by_platform()]['collection_media']
     CSV_FILES = os.path.expanduser('~') + _get_config()[_get_path_by_platform()]['csv_files']
     TXT_FILES = os.path.expanduser('~') + _get_config()[_get_path_by_platform()]['txt_files']
+    NUM_PROCESSES_MULT = _get_config()[_get_path_by_platform()]['num_processes_mult']
     STRIPE_MID = _get_config()['cookies']['stripe_mid']
     STRIPE_SID = _get_config()['cookies']['stripe_sid']
     ACCESS_TOKEN = _get_config()['cookies']['access_token']
