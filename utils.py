@@ -139,24 +139,10 @@ def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
     pool.map(map_convert_text_to_audio, tasks)
 
 
-def get_access_token() -> str:
-    email: str = Config.EMAIL.value
-    password: str = Config.PASSWORD.value
-    json_data = {
-        "email": email,
-        "password": password
-    }
-    with requests.post('https://gateway.lovo.ai/auth/login/email', json=json_data) as response:
-        response_json = response.json()
-        access_token = response_json['data']['accessToken']
-        return access_token
-
-
 def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_speed: int = VoiceSpeed.NORMAL.value):
-    access_token: str = get_access_token()
     while True:
         cookies = {
-            'ACCESS_TOKEN': access_token
+            'ACCESS_TOKEN': Config.ACCESS_TOKEN.value
         }
 
         headers = {
