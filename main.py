@@ -18,4 +18,4 @@ if __name__ == '__main__':
     root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
     generate_cards(root_deck_name, child_deck_name, level_id, lesson_id, regenerate_id, regenerate_all_lesson)
-    print("Done!")
+    print('Level {level_id} lesson {lesson_id} done!'.format(level_id=level_id.upper(), lesson_id=lesson_id))
