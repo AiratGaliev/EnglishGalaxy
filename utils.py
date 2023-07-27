@@ -38,8 +38,20 @@ PHRASE_FILE_NAME_TEMPLATE = "eg_{level_id}_l_{lesson_id}_phrase_{phrase_id}_{ini
 VOICE_STRING = "<li>[sound:{phrase_file_name}]&nbsp;{name}</li>"
 
 
-def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, lesson_id: int, regenerate_id: int,
-                   regenerate_all_lesson: bool):
+def parse_numeric_array(input_string):
+    try:
+        if '..' in input_string:
+            start, end = map(int, input_string.split('..'))
+            return list(range(start, end + 1))
+        else:
+            return [int(input_string)]
+    except ValueError:
+        raise ValueError("Incorrect input string format. Use the format '1' or '1..10'.")
+
+
+def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool):
+    root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
+    child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
     phrases = parse_csv(Config.CSV_FILES.value + root_deck_name + " - " + child_deck_name + '.csv')
 
     if regenerate_all_lesson:
@@ -59,7 +71,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
                                                                          child_deck_name=start_string_child_deck_name)
     for phrase in phrases:
         phrase_id = phrase_id + 1
-        print("Progress: {:2.1%}".format(phrase_id / len(phrases)))
+        # print("Progress: {:2.1%}".format(phrase_id / len(phrases)))
         all_string += start_string
         translation_original_string = "{translation}\t{original}".format(translation=phrase.translation,
                                                                          original=phrase.original)
@@ -110,6 +122,7 @@ def generate_cards(root_deck_name: str, child_deck_name: str, level_id: str, les
               encoding='utf-8') as file:
         file.write(all_string)
         file.close()
+    print('Level {level_id} lesson {lesson_id} done!'.format(level_id=level_id.upper(), lesson_id=lesson_id))
 
 
 def map_convert_text_to_audio(args):
