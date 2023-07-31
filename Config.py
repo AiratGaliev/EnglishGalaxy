@@ -1,8 +1,11 @@
 import configparser
 import os
 import platform
-import requests
 from enum import Enum
+
+import requests
+
+from Accent import Accent
 
 
 def get_config():
@@ -31,10 +34,17 @@ def get_access_token() -> str:
         return access_token
 
 
+accent = get_config()['main']['accent']
+if accent not in Accent.__members__.values():
+    raise ValueError("Invalid accent value in config")
+else:
+    accent = Accent(accent)
+
+
 class Config(Enum):
     LEVEL_ID = get_config()['main']['level_id']
+    ACCENT = accent
     COLLECTION_MEDIA = os.path.expanduser('~') + get_config()[get_path_by_platform()]['collection_media']
     CSV_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['csv_files']
     TXT_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['txt_files']
-    NUM_PROCESSES_MULT = get_config()[get_path_by_platform()]['num_processes_mult']
     ACCESS_TOKEN = get_access_token()
