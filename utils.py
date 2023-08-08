@@ -57,7 +57,8 @@ def parse_numeric_array(input_string):
 def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool, accent: str):
     root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
-    phrases = parse_csv(Config.CSV_FILES.value + root_deck_name + " - " + child_deck_name + '.csv')
+    phrases = parse_csv(
+        Config.CSV_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv')
 
     if regenerate_all_lesson:
         print("Regenerating all lesson is progress")
@@ -132,7 +133,7 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.MIA_MOUNT.value.name)
 
         all_string += "</ul>\n"
-    with open(Config.TXT_FILES.value + root_deck_name + " - " + child_deck_name + ".txt", "w",
+    with open(Config.TXT_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt", "w",
               encoding='utf-8') as file:
         file.write(all_string)
         file.close()
