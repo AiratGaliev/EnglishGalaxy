@@ -4,5 +4,5 @@ from Voice import Voice
 
 
 class BritishVoice(Enum):
-    RYAN_MAGUIRE: Voice = Voice('Ryan Maguire', 'rm', '60f66a0e051d090019bab6fd')
-    MIA_MOUNT: Voice = Voice('Mia Mount', 'mm', '60f66a95051d090019bab6fe')
+    MALE: Voice = Voice('Male', 'b_v_m', '60f66a0e051d090019bab6fd')
+    FEMALE: Voice = Voice('Female', 'b_v_f', '60f66a95051d090019bab6fe')

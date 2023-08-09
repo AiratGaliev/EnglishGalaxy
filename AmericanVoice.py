@@ -4,5 +4,5 @@ from Voice import Voice
 
 
 class AmericanVoice(Enum):
-    SABRINA_INKWELL: Voice = Voice('Sabrina Inkwell', 'si', '5ec77831ae1afc001ace8fc9')
-    TOM_JOSEPH: Voice = Voice('Tom Joseph', 'tj', '5ec777c2ae1afc001ace8fc3')
+    MALE: Voice = Voice('Male', 'a_v_m', '5ec777c2ae1afc001ace8fc3')
+    FEMALE: Voice = Voice('Female', 'a_v_f', '5ec77831ae1afc001ace8fc9')

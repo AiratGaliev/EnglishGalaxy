@@ -84,53 +84,53 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
             american_transcription = phonemizer_en_us.phonemize([phrase.original])[0]
             american_transcription = american_transcription.replace('ɹ', 'r')
             american_transcription = american_transcription.replace('ɐ', 'a')
-            american_string = "<br><br>american listen:<br>{american_transcription}<br><ul>".format(
+            american_string = "<br>{american_transcription}<br><ul>".format(
                 american_transcription=american_transcription)
 
             all_string += translation_original_string + american_string
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
-                                                                initials=AmericanVoice.TOM_JOSEPH.value.initials)
+                                                                initials=AmericanVoice.MALE.value.initials)
             is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.TOM_JOSEPH.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name, phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
-                                              name=AmericanVoice.TOM_JOSEPH.value.name)
+                                              name=AmericanVoice.MALE.value.name)
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
-                                                                initials=AmericanVoice.SABRINA_INKWELL.value.initials)
+                                                                initials=AmericanVoice.FEMALE.value.initials)
             is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.SABRINA_INKWELL.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name, phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
-                                              name=AmericanVoice.SABRINA_INKWELL.value.name)
+                                              name=AmericanVoice.FEMALE.value.name)
 
         if accent == Accent.BRITISH.value:
             british_transcription = phonemizer_en_gb.phonemize([phrase.original])[0]
             british_transcription = british_transcription.replace('ɹ', 'r')
             british_transcription = british_transcription.replace('ɐ', 'a')
-            british_string = "<br><br>british listen:<br>{british_transcription}<br><ul>".format(
+            british_string = "<br>{british_transcription}<br><ul>".format(
                 british_transcription=british_transcription)
             all_string += british_string
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
-                                                                initials=BritishVoice.RYAN_MAGUIRE.value.initials)
+                                                                initials=BritishVoice.MALE.value.initials)
             is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name, phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
-                                              name=BritishVoice.RYAN_MAGUIRE.value.name)
+                                              name=BritishVoice.MALE.value.name)
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
-                                                                initials=BritishVoice.MIA_MOUNT.value.initials)
+                                                                initials=BritishVoice.FEMALE.value.initials)
             is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_file_name, phrase.original)
-            all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.MIA_MOUNT.value.name)
+                convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name, phrase.original)
+            all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.FEMALE.value.name)
 
         all_string += "</ul>\n"
     with open(Config.TXT_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt", "w",
@@ -148,18 +148,22 @@ def map_convert_text_to_audio(args):
     phrase_id, level_id, lesson_id, phrases = args
     phrase = phrases[phrase_id]
     phrase_id = phrase_id + 1
-    phrase_file_name_tj = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                           initials=AmericanVoice.TOM_JOSEPH.value.initials)
-    phrase_file_name_si = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                           initials=AmericanVoice.SABRINA_INKWELL.value.initials)
-    phrase_file_name_rm = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                           initials=BritishVoice.RYAN_MAGUIRE.value.initials)
-    phrase_file_name_mm = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id, phrase_id=phrase_id,
-                                                           initials=BritishVoice.MIA_MOUNT.value.initials)
-    convert_text_to_audio(AmericanVoice.TOM_JOSEPH.value, phrase_file_name_tj, phrase.original)
-    convert_text_to_audio(AmericanVoice.SABRINA_INKWELL.value, phrase_file_name_si, phrase.original)
-    convert_text_to_audio(BritishVoice.RYAN_MAGUIRE.value, phrase_file_name_rm, phrase.original)
-    convert_text_to_audio(BritishVoice.MIA_MOUNT.value, phrase_file_name_mm, phrase.original)
+    phrase_file_name_a_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                              phrase_id=phrase_id,
+                                                              initials=AmericanVoice.MALE.value.initials)
+    phrase_file_name_a_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                              phrase_id=phrase_id,
+                                                              initials=AmericanVoice.FEMALE.value.initials)
+    phrase_file_name_b_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                              phrase_id=phrase_id,
+                                                              initials=BritishVoice.MALE.value.initials)
+    phrase_file_name_b_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                              phrase_id=phrase_id,
+                                                              initials=BritishVoice.FEMALE.value.initials)
+    convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name_a_v_m, phrase.original)
+    convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name_a_v_f, phrase.original)
+    convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name_b_v_m, phrase.original)
+    convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name_b_v_f, phrase.original)
 
 
 def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
