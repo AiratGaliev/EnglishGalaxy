@@ -2,7 +2,7 @@
 
 if [ ! -d "venv" ]; then
     echo "Creating venv..."
-    python -m venv venv
+    python3 -m venv venv
     source venv/bin/activate
     echo "Installing dependencies..."
     pip install --upgrade pip setuptools wheel
@@ -15,5 +15,5 @@ if [ ! -d "venv" ]; then
 else
     source venv/bin/activate
 fi
-python main.py
+python3 main.py
 deactivate
