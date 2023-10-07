@@ -1,4 +1,7 @@
-import csv
+import re
+
+import pandas as pd
+from openpyxl import load_workbook
 import glob
 import multiprocessing
 import os
@@ -27,14 +30,31 @@ def check_file_in_path(phrase_audio: str) -> bool:
     return False
 
 
+def load_keywords(filename):
+    df = pd.read_csv(filename, header=None, names=['keyword', 'hint'])
+    return dict(zip(df['keyword'], df['hint']))
+
+
+def process_translation(english_text, russian_translation, keyword_dict):
+    for keyword, hint in keyword_dict.items():
+        pattern = r'\b{}\b'.format(re.escape(keyword))
+        if re.search(pattern, english_text, re.IGNORECASE):
+            if f'({hint})' not in russian_translation:
+                russian_translation += f' ({hint})'
+    return russian_translation
+
+
+def clean_up_csv(csv_file):
+    with open(csv_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+    content = re.sub(r'\n+$', '', content)
+    with open(csv_file, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+
 def parse_csv(file_path) -> list[Phrase]:
-    phrases: list[Phrase] = []
-    with open(file_path, encoding='utf-8') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            phrase = Phrase(row[0], row[1])
-            phrases.append(phrase)
-            del phrase
+    df = pd.read_csv(file_path, header=None, names=['original', 'translation'])
+    phrases: list[Phrase] = [Phrase(row['original'], row['translation']) for index, row in df.iterrows()]
     return phrases
 
 
@@ -50,15 +70,21 @@ def parse_numeric_array(input_string):
         else:
             return [int(input_string)]
     except ValueError:
-        raise ValueError("Incorrect input string format. Use the format '1' or '1..10'.")
+        raise ValueError("Incorrect input string format. Use the format '1' or '1..50'.")
 
 
 def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool,
                    american_accent: bool, british_accent: bool):
     root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
-    phrases: list[Phrase] = parse_csv(
-        Config.CSV_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv')
+    keyword_dict = load_keywords(Config.DOCUMENTS.value + 'Keywords.csv')
+    csv_file = Config.CSV_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv'
+    df = pd.read_csv(csv_file, header=None, names=['english_text', 'russian_translation'])
+    df['russian_translation'] = df.apply(
+        lambda row: process_translation(row['english_text'], row['russian_translation'], keyword_dict), axis=1)
+    df.to_csv(csv_file, index=False, header=False)
+    clean_up_csv(csv_file)
+    phrases: list[Phrase] = parse_csv(csv_file)
 
     if regenerate_all_lesson:
         print("Regenerating all lesson is progress")
@@ -133,7 +159,8 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.FEMALE.value.name)
 
         all_string += "</ul>\n"
-    with open(Config.TXT_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt", "w",
+    with open(Config.GENERATED_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt",
+              "w",
               encoding='utf-8') as file:
         file.write(all_string)
         file.close()

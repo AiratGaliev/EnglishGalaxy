@@ -37,6 +37,7 @@ class Config(Enum):
     AMERICAN_ACCENT: bool = get_config()['main']['american_accent'] == "True"
     BRITISH_ACCENT: bool = get_config()['main']['british_accent'] == "True"
     COLLECTION_MEDIA = os.path.expanduser('~') + get_config()[get_path_by_platform()]['collection_media']
-    CSV_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['csv_files']
-    TXT_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['txt_files']
+    DOCUMENTS = os.path.expanduser('~') + get_config()['main']['documents']
+    CSV_FILES = str(DOCUMENTS) + "/CSV/"
+    GENERATED_FILES = str(DOCUMENTS) + "/Generated/"
     ACCESS_TOKEN = get_access_token()
