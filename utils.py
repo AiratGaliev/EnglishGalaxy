@@ -6,7 +6,6 @@ import os
 import requests
 from phonemizer.backend import EspeakBackend
 
-from Accent import Accent
 from AmericanVoice import AmericanVoice
 from BritishVoice import BritishVoice
 from Config import Config
@@ -54,15 +53,16 @@ def parse_numeric_array(input_string):
         raise ValueError("Incorrect input string format. Use the format '1' or '1..10'.")
 
 
-def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool, accent: str):
+def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool,
+                   american_accent: bool, british_accent: bool):
     root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
-    phrases = parse_csv(
+    phrases: list[Phrase] = parse_csv(
         Config.CSV_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv')
 
     if regenerate_all_lesson:
         print("Regenerating all lesson is progress")
-        generate_all_text_to_audio(level_id, lesson_id, phrases)
+        generate_all_text_to_audio(level_id, lesson_id, phrases, american_accent, british_accent)
 
     phrase_id = 0
     all_string = "#separator:tab\n" \
@@ -80,7 +80,7 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
         all_string += start_string
         translation_original_string = "{translation}\t{original}".format(translation=phrase.translation,
                                                                          original=phrase.original)
-        if accent == Accent.AMERICAN.value:
+        if american_accent:
             american_transcription = phonemizer_en_us.phonemize([phrase.original])[0]
             american_transcription = american_transcription.replace('ɹ', 'r')
             american_transcription = american_transcription.replace('ɐ', 'a')
@@ -107,7 +107,7 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
                                               name=AmericanVoice.FEMALE.value.name)
 
-        if accent == Accent.BRITISH.value:
+        if british_accent:
             british_transcription = phonemizer_en_gb.phonemize([phrase.original])[0]
             british_transcription = british_transcription.replace('ɹ', 'r')
             british_transcription = british_transcription.replace('ɐ', 'a')
@@ -145,31 +145,34 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
 
 
 def map_convert_text_to_audio(args):
-    phrase_id, level_id, lesson_id, phrases = args
+    phrase_id, level_id, lesson_id, phrases, american_accent, british_accent = args
     phrase = phrases[phrase_id]
     phrase_id = phrase_id + 1
-    phrase_file_name_a_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
-                                                              phrase_id=phrase_id,
-                                                              initials=AmericanVoice.MALE.value.initials)
-    phrase_file_name_a_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
-                                                              phrase_id=phrase_id,
-                                                              initials=AmericanVoice.FEMALE.value.initials)
-    phrase_file_name_b_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
-                                                              phrase_id=phrase_id,
-                                                              initials=BritishVoice.MALE.value.initials)
-    phrase_file_name_b_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
-                                                              phrase_id=phrase_id,
-                                                              initials=BritishVoice.FEMALE.value.initials)
-    convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name_a_v_m, phrase.original)
-    convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name_a_v_f, phrase.original)
-    convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name_b_v_m, phrase.original)
-    convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name_b_v_f, phrase.original)
+    if american_accent:
+        phrase_file_name_a_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                                  phrase_id=phrase_id,
+                                                                  initials=AmericanVoice.MALE.value.initials)
+        phrase_file_name_a_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                                  phrase_id=phrase_id,
+                                                                  initials=AmericanVoice.FEMALE.value.initials)
+        convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name_a_v_m, phrase.original)
+        convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name_a_v_f, phrase.original)
+    if british_accent:
+        phrase_file_name_b_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                                  phrase_id=phrase_id,
+                                                                  initials=BritishVoice.MALE.value.initials)
+        phrase_file_name_b_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level_id=level_id, lesson_id=lesson_id,
+                                                                  phrase_id=phrase_id,
+                                                                  initials=BritishVoice.FEMALE.value.initials)
+        convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name_b_v_m, phrase.original)
+        convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name_b_v_f, phrase.original)
 
 
-def generate_all_text_to_audio(level_id, lesson_id, phrases: list[Phrase]):
+def generate_all_text_to_audio(level_id, lesson_id, phrases, american_accent, british_accent):
     num_tasks = len(phrases)
     with multiprocessing.Pool() as pool:
-        tasks = [(phrase_id, level_id, lesson_id, phrases) for phrase_id in range(num_tasks)]
+        tasks = [(phrase_id, level_id, lesson_id, phrases, american_accent, british_accent) for phrase_id in
+                 range(num_tasks)]
         chunksize = len(tasks) // multiprocessing.cpu_count()
         pool.map(map_convert_text_to_audio, tasks, chunksize=chunksize)
 

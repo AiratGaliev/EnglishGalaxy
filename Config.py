@@ -5,8 +5,6 @@ from enum import Enum
 
 import requests
 
-from Accent import Accent
-
 
 def get_config():
     config = configparser.ConfigParser()
@@ -34,16 +32,10 @@ def get_access_token() -> str:
         return access_token
 
 
-accent = get_config()['main']['accent']
-if accent not in Accent.__members__.values():
-    raise ValueError("Invalid accent value in config")
-else:
-    accent = Accent(accent)
-
-
 class Config(Enum):
     LEVEL_ID = get_config()['main']['level_id']
-    ACCENT = accent
+    AMERICAN_ACCENT: bool = get_config()['main']['american_accent'] == "True"
+    BRITISH_ACCENT: bool = get_config()['main']['british_accent'] == "True"
     COLLECTION_MEDIA = os.path.expanduser('~') + get_config()[get_path_by_platform()]['collection_media']
     CSV_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['csv_files']
     TXT_FILES = os.path.expanduser('~') + get_config()[get_path_by_platform()]['txt_files']
