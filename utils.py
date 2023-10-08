@@ -1,7 +1,5 @@
 import re
-
 import pandas as pd
-from openpyxl import load_workbook
 import glob
 import multiprocessing
 import os
@@ -37,11 +35,18 @@ def load_keywords(filename):
 
 def process_translation(english_text, russian_translation, keyword_dict):
     for keyword, hint in keyword_dict.items():
-        pattern = r'\b{}\b'.format(re.escape(keyword))
-        if re.search(pattern, english_text, re.IGNORECASE):
+        if keyword != '*' and re.search(r'\b{}\b'.format(keyword), english_text, re.IGNORECASE):
             if f'({hint})' not in russian_translation:
                 russian_translation += f' ({hint})'
     return russian_translation
+
+
+def remove_hints(text, exceptions):
+    if exceptions:
+        pattern = r'\s*\((?!{})[^)]*\)\s*'.format('|'.join(re.escape(e) for e in exceptions))
+    else:
+        pattern = r'\s*\([^)]*\)\s*'
+    return re.sub(pattern, '', text)
 
 
 def clean_up_csv(csv_file):
@@ -78,8 +83,10 @@ def generate_cards(level_id: str, lesson_id: int, regenerate_id: int, regenerate
     root_deck_name: str = 'English Galaxy {level_id}'.format(level_id=level_id.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
     keyword_dict = load_keywords(Config.DOCUMENTS.value + 'Keywords.csv')
+    exceptions = keyword_dict.get('*', '').split('|') if '*' in keyword_dict else []
     csv_file = Config.CSV_FILES.value + level_id.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv'
     df = pd.read_csv(csv_file, header=None, names=['english_text', 'russian_translation'])
+    df['russian_translation'] = df['russian_translation'].apply(lambda text: remove_hints(text, exceptions))
     df['russian_translation'] = df.apply(
         lambda row: process_translation(row['english_text'], row['russian_translation'], keyword_dict), axis=1)
     df.to_csv(csv_file, index=False, header=False)
