@@ -36,7 +36,7 @@ def load_keywords(filename):
 def process_translation(english_text, russian_translation, keyword_dict):
     for keyword, hint in keyword_dict.items():
         if keyword != '*' and re.search(r'\b{}\b'.format(keyword), english_text, re.IGNORECASE):
-            if f'({hint})' not in russian_translation:
+            if f'{hint}' not in russian_translation:
                 russian_translation += f' ({hint})'
     return russian_translation
 
