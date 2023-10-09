@@ -34,10 +34,15 @@ def load_keywords(filename):
 
 
 def process_translation(english_text, russian_translation, keyword_dict):
+    hints = []
     for keyword, hint in keyword_dict.items():
-        if keyword != '*' and re.search(r'\b{}\b'.format(keyword), english_text, re.IGNORECASE):
-            if f'{hint}' not in russian_translation:
-                russian_translation += f' ({hint})'
+        if keyword != '*':
+            for match in re.finditer(r'\b{}\b'.format(keyword), english_text, re.IGNORECASE):
+                hints.append((match.start(), hint))
+    hints.sort()
+    for hint in hints:
+        if f'{hint[1]}' not in russian_translation:
+            russian_translation += f' ({hint[1]})'
     return russian_translation
 
 
