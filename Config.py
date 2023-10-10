@@ -1,6 +1,7 @@
 import configparser
 import os
 import platform
+import re
 from enum import Enum
 
 import requests
@@ -33,7 +34,8 @@ def get_access_token() -> str:
 
 
 class Config(Enum):
-    LEVEL_ID = get_config()['main']['level_id']
+    LEVELS: list[str] = re.split(r'\s*,\s*', get_config()["main"]["levels"])
+    LEVEL_ID: str = get_config()['main']['level_id']
     AMERICAN_ACCENT: bool = get_config()['main']['american_accent'] == "True"
     BRITISH_ACCENT: bool = get_config()['main']['british_accent'] == "True"
     COLLECTION_MEDIA = os.path.expanduser('~') + get_config()[get_path_by_platform()]['collection_media']
