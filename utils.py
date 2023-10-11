@@ -9,7 +9,6 @@ from phonemizer.backend import EspeakBackend
 
 from AmericanVoice import AmericanVoice
 from BritishVoice import BritishVoice
-from Config import Config
 from Phrase import Phrase
 from Voice import Voice
 from VoiceSpeed import VoiceSpeed
@@ -18,8 +17,19 @@ phonemizer_en_us = EspeakBackend(language='en-us')
 phonemizer_en_gb = EspeakBackend(language='en-gb')
 
 
-def check_file_in_path(phrase_audio: str) -> bool:
-    os.chdir(Config.COLLECTION_MEDIA.value)
+def get_access_token(email: str, password: str) -> str:
+    json_data = {
+        "email": email,
+        "password": password
+    }
+    with requests.post('https://gateway.lovo.ai/auth/login/email', json=json_data) as response:
+        response_json = response.json()
+        access_token = response_json['data']['accessToken']
+        return access_token
+
+
+def check_file_in_path(collection_media: str, phrase_audio: str) -> bool:
+    os.chdir(collection_media)
     files = glob.glob(phrase_audio)
     if len(files) > 0:
         for file in files:
@@ -83,13 +93,14 @@ def parse_numeric_array(input_string):
         raise ValueError("Incorrect input string format. Use the format '1' or '1..50'.")
 
 
-def generate_cards(level: str, lesson_id: int, regenerate_id: int, regenerate_all_lesson: bool,
-                   american_accent: bool, british_accent: bool):
+def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, regenerate_all_lessons: bool,
+                   american_accent: bool, british_accent: bool, collection_media: str, documents: str,
+                   access_token: str):
     root_deck_name: str = 'English Galaxy {level}'.format(level=level.upper())
     child_deck_name: str = 'Lesson {lesson_id}'.format(lesson_id=lesson_id)
-    keyword_dict = load_keywords(Config.DOCUMENTS.value + 'Keywords.csv')
+    keyword_dict = load_keywords(documents + 'Keywords.csv')
     exceptions = keyword_dict.get('*', '').split('|') if '*' in keyword_dict else []
-    csv_file = Config.CSV_FILES.value + level.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv'
+    csv_file = documents + "/CSV/" + level.upper() + "/" + root_deck_name + " - " + child_deck_name + '.csv'
     df = pd.read_csv(csv_file, header=None, names=['english_text', 'russian_translation'])
     df['russian_translation'] = df['russian_translation'].apply(lambda text: remove_hints(text, exceptions))
     df['russian_translation'] = df.apply(
@@ -98,9 +109,10 @@ def generate_cards(level: str, lesson_id: int, regenerate_id: int, regenerate_al
     clean_up_csv(csv_file)
     phrases: list[Phrase] = parse_csv(csv_file)
 
-    if regenerate_all_lesson:
+    if regenerate_all_lessons:
         print("Regenerating all lesson is progress")
-        generate_all_text_to_audio(level, lesson_id, phrases, american_accent, british_accent)
+        generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
+                                   access_token)
 
     phrase_id = 0
     all_string = "#separator:tab\n" \
@@ -130,18 +142,22 @@ def generate_cards(level: str, lesson_id: int, regenerate_id: int, regenerate_al
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
                                                                 initials=AmericanVoice.MALE.value.initials)
-            is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+            is_convert_tts = (not check_file_in_path(collection_media,
+                                                     phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name, access_token,
+                                      phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
                                               name=AmericanVoice.MALE.value.name)
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
                                                                 initials=AmericanVoice.FEMALE.value.initials)
-            is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+            is_convert_tts = (not check_file_in_path(collection_media,
+                                                     phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
+                                      phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
                                               name=AmericanVoice.FEMALE.value.name)
 
@@ -156,22 +172,26 @@ def generate_cards(level: str, lesson_id: int, regenerate_id: int, regenerate_al
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
                                                                 initials=BritishVoice.MALE.value.initials)
-            is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+            is_convert_tts = (not check_file_in_path(collection_media,
+                                                     phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name, access_token,
+                                      phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name,
                                               name=BritishVoice.MALE.value.name)
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                 phrase_id=phrase_id,
                                                                 initials=BritishVoice.FEMALE.value.initials)
-            is_convert_tts = (not check_file_in_path(phrase_file_name)) or phrase_id == regenerate_id
+            is_convert_tts = (not check_file_in_path(collection_media,
+                                                     phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name, phrase.original)
+                convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
+                                      phrase.original)
             all_string += VOICE_STRING.format(phrase_file_name=phrase_file_name, name=BritishVoice.FEMALE.value.name)
 
         all_string += "</ul>\n"
-    with open(Config.GENERATED_FILES.value + level.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt",
+    with open(documents + "/Generated/" + level.upper() + "/" + root_deck_name + " - " + child_deck_name + ".txt",
               "w",
               encoding='utf-8') as file:
         file.write(all_string)
@@ -184,7 +204,7 @@ def generate_cards(level: str, lesson_id: int, regenerate_id: int, regenerate_al
 
 
 def map_convert_text_to_audio(args):
-    phrase_id, level, lesson_id, phrases, american_accent, british_accent = args
+    phrase_id, level, lesson_id, collection_media, phrases, american_accent, british_accent, access_token = args
     phrase = phrases[phrase_id]
     phrase_id = phrase_id + 1
     if american_accent:
@@ -194,8 +214,10 @@ def map_convert_text_to_audio(args):
         phrase_file_name_a_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                   phrase_id=phrase_id,
                                                                   initials=AmericanVoice.FEMALE.value.initials)
-        convert_text_to_audio(AmericanVoice.MALE.value, phrase_file_name_a_v_m, phrase.original)
-        convert_text_to_audio(AmericanVoice.FEMALE.value, phrase_file_name_a_v_f, phrase.original)
+        convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name_a_v_m, phrase.original,
+                              access_token)
+        convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name_a_v_f, phrase.original,
+                              access_token)
     if british_accent:
         phrase_file_name_b_v_m = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                   phrase_id=phrase_id,
@@ -203,23 +225,27 @@ def map_convert_text_to_audio(args):
         phrase_file_name_b_v_f = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id,
                                                                   phrase_id=phrase_id,
                                                                   initials=BritishVoice.FEMALE.value.initials)
-        convert_text_to_audio(BritishVoice.MALE.value, phrase_file_name_b_v_m, phrase.original)
-        convert_text_to_audio(BritishVoice.FEMALE.value, phrase_file_name_b_v_f, phrase.original)
+        convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name_b_v_m, phrase.original,
+                              access_token)
+        convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name_b_v_f, phrase.original,
+                              access_token)
 
 
-def generate_all_text_to_audio(level, lesson_id, phrases, american_accent, british_accent):
+def generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
+                               access_token):
     num_tasks = len(phrases)
     with multiprocessing.Pool() as pool:
-        tasks = [(phrase_id, level, lesson_id, phrases, american_accent, british_accent) for phrase_id in
-                 range(num_tasks)]
+        tasks = [(phrase_id, level, lesson_id, collection_media, phrases, american_accent, british_accent, access_token)
+                 for phrase_id in range(num_tasks)]
         chunksize = len(tasks) // multiprocessing.cpu_count()
         pool.map(map_convert_text_to_audio, tasks, chunksize=chunksize)
 
 
-def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_speed: int = VoiceSpeed.NORMAL.value):
+def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, text: str, access_token: str,
+                          voice_speed: int = VoiceSpeed.NORMAL.value):
     while True:
         cookies = {
-            'ACCESS_TOKEN': Config.ACCESS_TOKEN.value
+            'ACCESS_TOKEN': access_token
         }
 
         headers = {
@@ -251,10 +277,10 @@ def convert_text_to_audio(voice: Voice, phrase_file_name: str, text: str, voice_
         with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
                            headers=headers) as response:
             with open(
-                    "{collection_media}{phrase_file_name}".format(collection_media=Config.COLLECTION_MEDIA.value,
+                    "{collection_media}{phrase_file_name}".format(collection_media=collection_media,
                                                                   phrase_file_name=phrase_file_name),
                     "wb") as file:
                 file.write(response.content)
                 file.close()
-        if check_file_in_path(phrase_file_name):
+        if check_file_in_path(collection_media, phrase_file_name):
             break
