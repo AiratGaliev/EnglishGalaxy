@@ -12,12 +12,21 @@ if __name__ == '__main__':
     password = Config.PASSWORD.value
     lessons_id: list[int] = parse_numeric_array("1..50")
     regenerate_exercise_id: int = 0
-    generate_all_level: bool = True if input('Generate all levels? y/n (default n):') == 'y' else False
-    generate_all_lessons_text: bool = True if input('Generate all lessons text? y/n (default n):') == 'y' else False
-    regenerate_all_lessons: bool = True if input('Regenerate all lesson? y/n (default n):') == 'y' else False
+    generate_all_levels: bool = True if input('Generate all levels? y/n (default n):') == 'y' else False
+    generate_texts_of_all_levels: bool = False
+    generate_lessons: bool = False
+    generate_lesson_texts: bool = False
+    if not generate_all_levels:
+        generate_texts_of_all_levels = True if input('Generate texts of all levels? y/n (default n):') == 'y' else False
+    else:
+        generate_lessons = True
+    if not (generate_all_levels or generate_texts_of_all_levels):
+        generate_lessons = True if input('Generate lessons? y/n (default n):') == 'y' else False
+        if not generate_lessons:
+            generate_lesson_texts = True if input('Generate lesson texts? y/n (default n):') == 'y' else False
     access_token = get_access_token(email, password)
     checked_levels: list[str] = []
-    if generate_all_level:
+    if generate_all_levels or generate_texts_of_all_levels:
         checked_levels.extend(levels)
     else:
         checked_levels.append(levels[int(level_id)]) if level_id != '' else checked_levels.extend(levels)
@@ -28,13 +37,13 @@ if __name__ == '__main__':
                 print("An American accent has been chosen")
             if british_accent:
                 print("A British accent has been chosen")
-            if not (generate_all_lessons_text or regenerate_all_lessons):
+            if not (generate_all_levels or generate_texts_of_all_levels):
                 lessons_str = input("Enter generate lessons in the format '1' or '1..50'(default):")
                 if lessons_str != '':
                     lessons_id = parse_numeric_array(lessons_str)
                     regenerate_exercise_id = int(input('Regenerate exercise id:'))
         except ValueError:
-            input('Not a number')
+            print('Not a number')
         for lesson_id in lessons_id:
-            generate_cards(level, lesson_id, regenerate_exercise_id, regenerate_all_lessons, american_accent,
+            generate_cards(level, lesson_id, regenerate_exercise_id, generate_lessons, american_accent,
                            british_accent, collection_media, documents, access_token)
