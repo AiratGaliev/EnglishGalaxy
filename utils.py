@@ -1,9 +1,10 @@
-import re
-import pandas as pd
 import glob
 import multiprocessing
 import os
+import re
+import time
 
+import pandas as pd
 import requests
 from phonemizer.backend import EspeakBackend
 
@@ -93,7 +94,7 @@ def parse_numeric_array(input_string):
         raise ValueError("Incorrect input string format. Use the format '1' or '1..50'.")
 
 
-def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, regenerate_all_lessons: bool,
+def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, regenerate_lessons: bool,
                    american_accent: bool, british_accent: bool, collection_media: str, documents: str,
                    access_token: str):
     root_deck_name: str = 'English Galaxy {level}'.format(level=level.upper())
@@ -109,8 +110,8 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, rege
     clean_up_csv(csv_file)
     phrases: list[Phrase] = parse_csv(csv_file)
 
-    if regenerate_all_lessons:
-        print("Regenerating all lesson is progress")
+    if regenerate_lessons:
+        print("Regenerating lesson is progress")
         generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
                                    access_token)
 
@@ -243,44 +244,58 @@ def generate_all_text_to_audio(level, lesson_id, collection_media, phrases, amer
 
 def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, text: str, access_token: str,
                           voice_speed: int = VoiceSpeed.NORMAL.value):
-    while True:
-        cookies = {
-            'ACCESS_TOKEN': access_token
-        }
+    max_retries = 50
+    retries = 0
 
-        headers = {
-            'authority': 'studio.lovo.ai',
-            'accept': 'application/json, text/plain, */*',
-            'accept-language': 'en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7',
-            'content-type': 'application/json;charset=UTF-8',
-            'dnt': '1',
-            'origin': 'https://studio.lovo.ai',
-            'referer': 'https://studio.lovo.ai/',
-            'sec-ch-ua': '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Linux"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-        }
+    cookies = {
+        'ACCESS_TOKEN': access_token
+    }
 
-        json_data = {
-            "speaker_id": voice.id,
-            "text": text,
-            "speed": "[{voice_speed},\"false\"]".format(voice_speed=voice_speed),
-            "pause": "0",
-            "emphasis": "[]",
-            "is_custom": False
-        }
+    headers = {
+        'authority': 'studio.lovo.ai',
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7',
+        'content-type': 'application/json;charset=UTF-8',
+        'dnt': '1',
+        'origin': 'https://studio.lovo.ai',
+        'referer': 'https://studio.lovo.ai/',
+        'sec-ch-ua': '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Linux"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    }
 
-        with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
-                           headers=headers) as response:
-            with open(
-                    "{collection_media}{phrase_file_name}".format(collection_media=collection_media,
-                                                                  phrase_file_name=phrase_file_name),
-                    "wb") as file:
-                file.write(response.content)
-                file.close()
-        if check_file_in_path(collection_media, phrase_file_name):
-            break
+    json_data = {
+        "speaker_id": voice.id,
+        "text": text,
+        "speed": "[{voice_speed},\"false\"]".format(voice_speed=voice_speed),
+        "pause": "0",
+        "emphasis": "[]",
+        "is_custom": False
+    }
+
+    while retries < max_retries:
+        try:
+            with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
+                               headers=headers) as response:
+                with open(
+                        "{collection_media}{phrase_file_name}".format(collection_media=collection_media,
+                                                                      phrase_file_name=phrase_file_name),
+                        "wb") as file:
+                    file.write(response.content)
+                    file.close()
+            if check_file_in_path(collection_media, phrase_file_name):
+                break
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+            retries += 1
+        except Exception as err:
+            print(f"An error occurred: {err}")
+            retries += 1
+
+        if retries < max_retries:
+            print(f"Retrying in 5 seconds... (Attempt {retries}/{max_retries})")
+            time.sleep(5)
