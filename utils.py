@@ -242,7 +242,7 @@ def generate_all_text_to_audio(level, lesson_id, collection_media, phrases, amer
         pool.map(map_convert_text_to_audio, tasks, chunksize=chunksize)
 
 
-def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, text: str, access_token: str,
+def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, access_token: str, text: str,
                           voice_speed: int = VoiceSpeed.NORMAL.value):
     max_retries = 50
     retries = 0
@@ -265,7 +265,7 @@ def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name:
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
     }
 
     json_data = {
