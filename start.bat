@@ -5,7 +5,7 @@ if not exist venv (
     python -m venv venv
     call venv\Scripts\activate
     echo Installing dependencies...
-    pip install --upgrade pip setuptools wheel
+    python.exe -m pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
     if errorlevel 1 (
         echo Error happens. Deleting venv...
