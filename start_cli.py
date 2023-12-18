@@ -1,5 +1,5 @@
-from Config import Config
-from utils import generate_cards, parse_numeric_array, get_access_token
+from config.Config import Config
+from logic.utils import generate_cards, parse_numeric_array, get_access_token
 
 if __name__ == '__main__':
     levels: list[str] = Config.LEVELS_LIST.value
@@ -15,15 +15,12 @@ if __name__ == '__main__':
     generate_all_levels: bool = True if input('Generate all levels? y/n (default n):') == 'y' else False
     generate_texts_of_all_levels: bool = False
     generate_lessons: bool = False
-    generate_lesson_texts: bool = False
     if not generate_all_levels:
         generate_texts_of_all_levels = True if input('Generate texts of all levels? y/n (default n):') == 'y' else False
     else:
         generate_lessons = True
     if not (generate_all_levels or generate_texts_of_all_levels):
         generate_lessons = True if input('Generate lessons? y/n (default n):') == 'y' else False
-        if not generate_lessons:
-            generate_lesson_texts = True if input('Generate lesson texts? y/n (default n):') == 'y' else False
     access_token = get_access_token(email, password)
     checked_levels: list[str] = []
     if generate_all_levels or generate_texts_of_all_levels:

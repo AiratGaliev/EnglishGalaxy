@@ -6,18 +6,20 @@ import time
 
 import pandas as pd
 import requests
+import streamlit as st
 from phonemizer.backend import EspeakBackend
 
-from AmericanVoice import AmericanVoice
-from BritishVoice import BritishVoice
-from Phrase import Phrase
-from Voice import Voice
-from VoiceSpeed import VoiceSpeed
+from models.AmericanVoice import AmericanVoice
+from models.BritishVoice import BritishVoice
+from models.Phrase import Phrase
+from models.Voice import Voice
+from models.VoiceSpeed import VoiceSpeed
 
 phonemizer_en_us = EspeakBackend(language='en-us')
 phonemizer_en_gb = EspeakBackend(language='en-gb')
 
 
+@st.cache_resource
 def get_access_token(email: str, password: str) -> str:
     json_data = {
         "email": email,
@@ -111,7 +113,8 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, rege
     phrases: list[Phrase] = parse_csv(csv_file)
 
     if regenerate_lessons:
-        print("Regenerating lesson is progress")
+        st.info("Regenerating level {level} lesson {lesson_id} is progress".format(level=level.upper(),
+                                                                                   lesson_id=lesson_id), icon="ℹ️")
         generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
                                    access_token)
 
@@ -196,7 +199,7 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, rege
     del phrase_file_name
     del phrases
 
-    print('Level {level} lesson {lesson_id} done!'.format(level=level.upper(), lesson_id=lesson_id))
+    st.success('Level {level} lesson {lesson_id} done!'.format(level=level.upper(), lesson_id=lesson_id), icon="✅")
 
 
 def map_convert_text_to_audio(args):
@@ -281,12 +284,12 @@ def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name:
             if check_file_in_path(collection_media, phrase_file_name):
                 break
         except requests.exceptions.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err}")
+            st.error(f"HTTP error occurred: {http_err}")
             retries += 1
         except Exception as err:
-            print(f"An error occurred: {err}")
+            st.error(f"An error occurred: {err}")
             retries += 1
 
         if retries < max_retries:
-            print(f"Retrying in 5 seconds... (Attempt {retries}/{max_retries})")
+            st.warning(f"Retrying in 5 seconds... (Attempt {retries}/{max_retries})", icon="⚠️")
             time.sleep(5)

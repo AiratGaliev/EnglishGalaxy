@@ -15,5 +15,5 @@ if [ ! -d "venv" ]; then
 else
     source venv/bin/activate
 fi
-streamlit run start.py
+python3 start_cli.py
 deactivate

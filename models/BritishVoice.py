@@ -1,6 +1,6 @@
 from enum import Enum
 
-from Voice import Voice
+from models.Voice import Voice
 
 
 class BritishVoice(Enum):
