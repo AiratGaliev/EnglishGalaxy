@@ -23,9 +23,9 @@ if __name__ == '__main__':
 
     st.set_page_config(
         page_title="English Galaxy",
-        page_icon="👋",
+        page_icon="card_file_box",
     )
-    st.title("Generate English Galaxy Cards")
+    st.title("Generate Anki Cards")
     is_generate_texts_of_all_levels = False
     is_generate_lessons = False
     access_token = get_access_token(email, password)
