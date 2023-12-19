@@ -45,13 +45,13 @@ if __name__ == '__main__':
         else:
             lessons = [st.number_input("Select generate lesson", value=1, min_value=1, max_value=50, step=1)]
             regenerate_exercise = st.number_input("Regenerate exercise", value=1, min_value=1, step=1)
-    start_btn = st.button('Start', type="primary", on_click=click_button, disabled=st.session_state.clicked)
+    start_btn = st.button('🚩 Start', type="secondary", on_click=click_button, disabled=st.session_state.clicked)
     if start_btn:
-        with st.status("Operation in progress. Please wait.") as status:
+        with st.status("🚧 Operation in progress. Please wait. 🚧") as status:
             for level in levels_list:
                 for lesson in lessons:
                     generate_cards(level, lesson, regenerate_exercise, is_generate_lessons, american_accent,
                                    british_accent,
                                    collection_media, documents, access_token)
-            status.update(label="Operation completed", state="complete")
+            status.update(label="🏁 Operation completed 🏁", state="complete")
             st.session_state.clicked = False
