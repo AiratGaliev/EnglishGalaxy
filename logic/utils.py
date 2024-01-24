@@ -31,9 +31,9 @@ def get_access_token(email: str, password: str) -> str:
         return access_token
 
 
-def check_file_in_path(collection_media: str, phrase_audio: str) -> bool:
-    os.chdir(collection_media)
-    files = glob.glob(phrase_audio)
+def check_file_in_path(path: str, file_name: str) -> bool:
+    os.chdir(path)
+    files = glob.glob(file_name)
     if len(files) > 0:
         for file in files:
             get_size = os.path.getsize(file)

@@ -31,7 +31,9 @@ if __name__ == '__main__':
     access_token = get_access_token(email, password)
     lessons: list[int] = parse_numeric_array("1..50")
     regenerate_exercise: int = 0
-    is_generate_all_levels = st.checkbox("Generate all levels", value=True)
+    is_american_accent = st.checkbox("American accent", value=american_accent)
+    is_british_accent = st.checkbox("British accent", value=british_accent)
+    is_generate_all_levels = st.checkbox("Generate all levels", value=False)
     if not is_generate_all_levels:
         is_generate_texts_of_all_levels = st.checkbox("Generate texts of all levels", value=True)
     if not (is_generate_all_levels or is_generate_texts_of_all_levels):
@@ -50,8 +52,7 @@ if __name__ == '__main__':
         with st.status("🚧 Operation in progress. Please wait. 🚧") as status:
             for level in levels_list:
                 for lesson in lessons:
-                    generate_cards(level, lesson, regenerate_exercise, is_generate_lessons, american_accent,
-                                   british_accent,
-                                   collection_media, documents, access_token)
+                    generate_cards(level, lesson, regenerate_exercise, is_generate_lessons, is_american_accent,
+                                   is_british_accent, collection_media, documents, access_token)
             status.update(label="🏁 Operation completed 🏁", state="complete")
             st.session_state.clicked = False
