@@ -27,18 +27,17 @@ if __name__ == '__main__':
     )
     st.title("Generate Anki Cards")
     is_generate_texts_of_all_levels = False
-    is_generate_lessons = False
     access_token = get_access_token(email, password)
     lessons: list[int] = parse_numeric_array("1..50")
     regenerate_exercise: int = 0
     is_american_accent = st.checkbox("American accent", value=american_accent)
     is_british_accent = st.checkbox("British accent", value=british_accent)
-    is_generate_all_levels = st.checkbox("Generate all levels", value=False)
-    if not is_generate_all_levels:
+    is_generate_all_text_to_audio = st.checkbox("Generate all levels text to audio", value=False)
+    if not is_generate_all_text_to_audio:
         is_generate_texts_of_all_levels = st.checkbox("Generate texts of all levels", value=True)
-    if not (is_generate_all_levels or is_generate_texts_of_all_levels):
+    if not (is_generate_all_text_to_audio or is_generate_texts_of_all_levels):
         levels_list = [st.selectbox("Select levels", levels_list)]
-        is_generate_lessons = st.checkbox("Generate lessons", value=True)
+        is_generate_all_text_to_audio = st.checkbox("Generate lessons", value=True)
         genre = st.radio("Select lessons", ["Some", "One"])
         if genre == "Some":
             lessons = st.slider('Select a range of generate lessons', 1, 50, (1, 50))
@@ -52,7 +51,7 @@ if __name__ == '__main__':
         with st.status("🚧 Operation in progress. Please wait. 🚧") as status:
             for level in levels_list:
                 for lesson in lessons:
-                    generate_cards(level, lesson, regenerate_exercise, is_generate_lessons, is_american_accent,
-                                   is_british_accent, collection_media, documents, access_token)
+                    generate_cards(level, lesson, regenerate_exercise, is_generate_all_text_to_audio,
+                                   is_american_accent, is_british_accent, collection_media, documents, access_token)
             status.update(label="🏁 Operation completed 🏁", state="complete")
             st.session_state.clicked = False

@@ -96,7 +96,7 @@ def parse_numeric_array(input_string):
         raise ValueError("Incorrect input string format. Use the format '1' or '1..50'.")
 
 
-def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, regenerate_lessons: bool,
+def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_generate_all_text_to_audio: bool,
                    american_accent: bool, british_accent: bool, collection_media: str, documents: str,
                    access_token: str):
     root_deck_name: str = 'English Galaxy {level}'.format(level=level.upper())
@@ -112,7 +112,7 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, rege
     clean_up_csv(csv_file)
     phrases: list[Phrase] = parse_csv(csv_file)
 
-    if regenerate_lessons:
+    if is_generate_all_text_to_audio:
         st.info("Regenerating level {level} lesson {lesson_id} is progress".format(level=level.upper(),
                                                                                    lesson_id=lesson_id), icon="ℹ️")
         generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
