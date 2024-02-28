@@ -31,7 +31,7 @@ if __name__ == '__main__':
     lessons: list[int] = parse_numeric_array("1..50")
     regenerate_exercise: int = 0
     is_american_accent = st.checkbox("American accent", value=american_accent)
-    is_british_accent = st.checkbox("British accent", value=british_accent)
+    is_british_accent = st.checkbox("British accent", value=british_accent, disabled=True)
     is_generate_all_text_to_audio = st.checkbox("Generate all levels text to audio", value=False)
     if not is_generate_all_text_to_audio:
         is_generate_texts_of_all_levels = st.checkbox("Generate texts of all levels", value=True)
