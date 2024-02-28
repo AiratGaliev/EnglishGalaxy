@@ -138,8 +138,8 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_g
             american_transcription = phonemizer_en_us.phonemize([phrase.original])[0]
             american_transcription = american_transcription.replace('ɹ', 'r')
             american_transcription = american_transcription.replace('ɐ', 'a')
-            american_string = "<br>{american_transcription}<br><ul>".format(
-                american_transcription=american_transcription)
+            american_transcription = american_transcription.strip()
+            american_string = f"<br>{american_transcription}<br><ul>"
 
             all_string += translation_original_string + american_string
 
@@ -167,8 +167,8 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_g
             british_transcription = phonemizer_en_gb.phonemize([phrase.original])[0]
             british_transcription = british_transcription.replace('ɹ', 'r')
             british_transcription = british_transcription.replace('ɐ', 'a')
-            british_string = "<br>{british_transcription}<br><ul>".format(
-                british_transcription=british_transcription)
+            british_transcription = british_transcription.strip()
+            british_string = f"<br>{british_transcription}<br><ul>"
             all_string += british_string
 
             phrase_file_name = PHRASE_FILE_NAME_TEMPLATE.format(level=level, lesson_id=lesson_id, phrase_id=phrase_id,
