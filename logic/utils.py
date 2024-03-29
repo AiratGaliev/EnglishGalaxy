@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import requests
 import streamlit as st
+from pandas import DataFrame
 from phonemizer.backend import EspeakBackend
 
 from models.AmericanVoice import AmericanVoice
@@ -79,6 +80,53 @@ def parse_csv(file_path) -> list[Phrase]:
     df = pd.read_csv(file_path, header=None, names=['original', 'translation'])
     phrases: list[Phrase] = [Phrase(row['original'], row['translation']) for index, row in df.iterrows()]
     return phrases
+
+
+def clean_up_duplicates(file_paths: list[str]):
+    # Чтение данных из всех файлов и создание DataFrame для каждого файла
+    dfs: list[DataFrame] = []
+    for file_path in file_paths:
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path, header=None, names=['English', 'Russian'])
+            dfs.append(df)
+
+    # Удаление дубликатов по колонке 'English' в объединенном DataFrame
+    combined_df = pd.concat(dfs, ignore_index=True)
+    combined_df.drop_duplicates(subset=['English'], inplace=True)
+
+    # Разделение данных обратно на DataFrame для каждого файла
+    split_dfs = []
+    start_idx = 0
+    for df in dfs:
+        end_idx = start_idx + len(df)
+        split_df = combined_df[(combined_df.index >= start_idx) & (combined_df.index < end_idx)]
+        split_dfs.append(split_df)
+        start_idx = end_idx
+
+    # Сохранение уникальных строк обратно в файлы
+    for i, df in enumerate(split_dfs):
+        df.to_csv(file_paths[i], index=False, header=False)
+        clean_up_csv(file_paths[i])
+
+
+def natural_sort(file_paths: list[str]) -> list[str]:
+    def atoi(text):
+        return int(text) if text.isdigit() else text
+
+    def natural_keys(text):
+        return [atoi(c) for c in re.split(r'(\d+)', text)]
+
+    return sorted(file_paths, key=natural_keys)
+
+
+def get_file_paths(folder_paths: list[str]) -> list[str]:
+    file_paths = []
+    for folder_path in folder_paths:
+        if os.path.exists(folder_path):
+            files = os.listdir(folder_path)
+            for file in files:
+                file_paths.append(os.path.join(folder_path, file))
+    return natural_sort(file_paths)
 
 
 # PHRASE_FILE_NAME_TEMPLATE = "eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{initials}.wav"

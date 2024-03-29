@@ -1,13 +1,19 @@
+import os
+
 from config.Config import Config
-from logic.utils import generate_cards, parse_numeric_array, get_access_token
+from logic.utils import generate_cards, parse_numeric_array, get_access_token, get_file_paths, clean_up_duplicates
 
 if __name__ == '__main__':
     levels: list[str] = Config.LEVELS_LIST.value
+    folders = [level.upper() for level in levels]
+    documents = Config.DOCUMENTS.value
+    folder_paths: list[str] = [os.path.join(documents + "CSV", folder) for folder in folders]
+    file_paths: list[str] = get_file_paths(folder_paths)
+    clean_up_duplicates(file_paths)
     level_id = Config.LEVEL_ID.value
     american_accent: bool = Config.AMERICAN_ACCENT.value
     british_accent: bool = Config.BRITISH_ACCENT.value
     collection_media = Config.COLLECTION_MEDIA.value
-    documents = Config.DOCUMENTS.value
     email = Config.EMAIL.value
     password = Config.PASSWORD.value
     lessons_id: list[int] = parse_numeric_array("1..50")

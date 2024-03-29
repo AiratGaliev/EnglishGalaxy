@@ -1,13 +1,19 @@
+import os
+
 import streamlit as st
 
 from config.Config import Config
-from logic.utils import get_access_token, parse_numeric_array, generate_cards
+from logic.utils import get_access_token, parse_numeric_array, generate_cards, get_file_paths, clean_up_duplicates
 
 levels_list: list[str] = Config.LEVELS_LIST.value
+folders = [level.upper() for level in levels_list]
+documents = Config.DOCUMENTS.value
+folder_paths: list[str] = [os.path.join(documents + "CSV", folder) for folder in folders]
+file_paths: list[str] = get_file_paths(folder_paths)
+clean_up_duplicates(file_paths)
 american_accent: bool = Config.AMERICAN_ACCENT.value
 british_accent: bool = Config.BRITISH_ACCENT.value
 collection_media = Config.COLLECTION_MEDIA.value
-documents = Config.DOCUMENTS.value
 email = Config.EMAIL.value
 password = Config.PASSWORD.value
 
