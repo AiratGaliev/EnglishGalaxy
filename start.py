@@ -10,7 +10,6 @@ folders = [level.upper() for level in levels_list]
 documents = Config.DOCUMENTS.value
 folder_paths: list[str] = [os.path.join(documents + "CSV", folder) for folder in folders]
 file_paths: list[str] = get_file_paths(folder_paths)
-clean_up_duplicates(file_paths)
 american_accent: bool = Config.AMERICAN_ACCENT.value
 british_accent: bool = Config.BRITISH_ACCENT.value
 collection_media = Config.COLLECTION_MEDIA.value
@@ -36,6 +35,7 @@ if __name__ == '__main__':
     access_token = get_access_token(email, password)
     lessons: list[int] = parse_numeric_array("1..50")
     regenerate_exercise: int = 0
+    is_clean_up_duplicates = st.checkbox("Clean up duplicates", value=False)
     is_american_accent = st.checkbox("American accent", value=american_accent)
     is_british_accent = st.checkbox("British accent", value=british_accent, disabled=True)
     is_generate_all_text_to_audio = st.checkbox("Generate all levels text to audio", value=False)
@@ -53,6 +53,9 @@ if __name__ == '__main__':
             lessons = [st.number_input("Select generate lesson", value=1, min_value=1, max_value=50, step=1)]
             regenerate_exercise = st.number_input("Regenerate exercise", value=1, min_value=1, step=1)
     start_btn = st.button('🚩 Start', type="secondary", on_click=click_button, disabled=st.session_state.clicked)
+    if start_btn:
+        if is_clean_up_duplicates:
+            clean_up_duplicates(file_paths)
     if start_btn:
         with st.status("🚧 Operation in progress. Please wait. 🚧") as status:
             for level in levels_list:

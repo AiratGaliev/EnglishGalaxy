@@ -1,9 +1,10 @@
+import asyncio
 import glob
 import multiprocessing
 import os
 import re
-import time
 
+import aiohttp
 import pandas as pd
 import requests
 import streamlit as st
@@ -192,16 +193,18 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_g
             is_convert_tts = (not check_file_in_path(collection_media,
                                                      phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name, access_token,
-                                      phrase.original)
+                asyncio.run(
+                    convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name, access_token,
+                                          phrase.original))
             all_string += f"<li>[sound:{phrase_file_name}]&nbsp;{AmericanVoice.MALE.value.name}</li>"
 
             phrase_file_name = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{AmericanVoice.FEMALE.value.initials}.wav"
             is_convert_tts = (not check_file_in_path(collection_media,
                                                      phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
-                                      phrase.original)
+                asyncio.run(
+                    convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
+                                          phrase.original))
             all_string += f"<li>[sound:{phrase_file_name}]&nbsp;{AmericanVoice.FEMALE.value.name}</li>"
 
         if british_accent:
@@ -216,16 +219,18 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_g
             is_convert_tts = (not check_file_in_path(collection_media,
                                                      phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name, access_token,
-                                      phrase.original)
+                asyncio.run(
+                    convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name, access_token,
+                                          phrase.original))
             all_string += f"<li>[sound:{phrase_file_name}]&nbsp;{BritishVoice.MALE.value.name}</li>"
 
             phrase_file_name = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{BritishVoice.FEMALE.value.initials}.wav"
             is_convert_tts = (not check_file_in_path(collection_media,
                                                      phrase_file_name)) or phrase_id == regenerate_exercise_id
             if is_convert_tts:
-                convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
-                                      phrase.original)
+                asyncio.run(
+                    convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name, access_token,
+                                          phrase.original))
             all_string += f"<li>[sound:{phrase_file_name}]&nbsp;{BritishVoice.FEMALE.value.name}</li>"
 
         all_string += "</ul>\n"
@@ -240,38 +245,44 @@ def generate_cards(level: str, lesson_id: int, regenerate_exercise_id: int, is_g
     st.success(f'Level {level.upper()} lesson {lesson_id} done!', icon="✅")
 
 
-def map_convert_text_to_audio(args):
+async def map_convert_text_to_audio(args):
     phrase_id, level, lesson_id, collection_media, phrases, american_accent, british_accent, access_token = args
     phrase = phrases[phrase_id]
     phrase_id = phrase_id + 1
     if american_accent:
         phrase_file_name_a_v_m = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{AmericanVoice.MALE.value.initials}.wav"
         phrase_file_name_a_v_f = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{AmericanVoice.FEMALE.value.initials}.wav"
-        convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name_a_v_m, access_token,
-                              phrase.original)
-        convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name_a_v_f, access_token,
-                              phrase.original)
+
+        await convert_text_to_audio(AmericanVoice.MALE.value, collection_media, phrase_file_name_a_v_m, access_token,
+                                    phrase.original)
+        await convert_text_to_audio(AmericanVoice.FEMALE.value, collection_media, phrase_file_name_a_v_f, access_token,
+                                    phrase.original)
     if british_accent:
         phrase_file_name_b_v_m = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{BritishVoice.MALE.value.initials}.wav"
         phrase_file_name_b_v_f = f"eg_{level}_l_{lesson_id}_phrase_{phrase_id}_{BritishVoice.FEMALE.value.initials}.wav"
-        convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name_b_v_m, access_token,
-                              phrase.original)
-        convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name_b_v_f, access_token,
-                              phrase.original)
+        await convert_text_to_audio(BritishVoice.MALE.value, collection_media, phrase_file_name_b_v_m,
+                                    access_token, phrase.original)
+        await convert_text_to_audio(BritishVoice.FEMALE.value, collection_media, phrase_file_name_b_v_f,
+                                    access_token, phrase.original)
+
+
+def map_convert_text_to_audio_wrap(args):
+    asyncio.run(map_convert_text_to_audio(args))
 
 
 def generate_all_text_to_audio(level, lesson_id, collection_media, phrases, american_accent, british_accent,
                                access_token):
     num_tasks = len(phrases)
-    with multiprocessing.Pool() as pool:
+    num_processes = multiprocessing.cpu_count() * 4
+    with multiprocessing.Pool(processes=num_processes) as pool:
         tasks = [(phrase_id, level, lesson_id, collection_media, phrases, american_accent, british_accent, access_token)
                  for phrase_id in range(num_tasks)]
-        chunksize = len(tasks) // multiprocessing.cpu_count()
-        pool.map(map_convert_text_to_audio, tasks, chunksize=chunksize)
+        chunksize = len(tasks) // num_processes
+        pool.map(map_convert_text_to_audio_wrap, tasks, chunksize=chunksize)
 
 
-def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, access_token: str, text: str,
-                          voice_speed: int = VoiceSpeed.NORMAL.value):
+async def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name: str, access_token: str,
+                                text: str, voice_speed: int = VoiceSpeed.NORMAL.value):
     max_retries = 50
     retries = 0
 
@@ -307,20 +318,22 @@ def convert_text_to_audio(voice: Voice, collection_media: str, phrase_file_name:
 
     while retries < max_retries:
         try:
-            with requests.post('https://studio.lovo.ai/api/workspace/convert_audio', cookies=cookies, json=json_data,
-                               headers=headers) as response:
-                with open(f"{collection_media}{phrase_file_name}", "wb") as file:
-                    file.write(response.content)
-                    file.close()
+            async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
+                async with session.post('https://studio.lovo.ai/api/workspace/convert_audio',
+                                        json=json_data) as response:
+                    response_content = await response.read()
+                    with open(f"{collection_media}{phrase_file_name}", "wb") as file:
+                        file.write(response_content)
+                        file.close()
             if check_file_in_path(collection_media, phrase_file_name):
                 break
-        except requests.exceptions.HTTPError as http_err:
-            st.error(f"HTTP error occurred: {http_err}")
+        except aiohttp.ClientError as client_err:
+            st.error(f"Client error occurred: {client_err}")
             retries += 1
         except Exception as err:
             st.error(f"An error occurred: {err}")
             retries += 1
 
         if retries < max_retries:
-            st.warning(f"Retrying in 5 seconds... (Attempt {retries}/{max_retries})", icon="⚠️")
-            time.sleep(5)
+            st.warning(f"Retrying in 2 seconds... (Attempt {retries}/{max_retries})", icon="⚠️")
+            await asyncio.sleep(2)

@@ -9,7 +9,6 @@ if __name__ == '__main__':
     documents = Config.DOCUMENTS.value
     folder_paths: list[str] = [os.path.join(documents + "CSV", folder) for folder in folders]
     file_paths: list[str] = get_file_paths(folder_paths)
-    clean_up_duplicates(file_paths)
     level_id = Config.LEVEL_ID.value
     american_accent: bool = Config.AMERICAN_ACCENT.value
     british_accent: bool = Config.BRITISH_ACCENT.value
@@ -18,6 +17,9 @@ if __name__ == '__main__':
     password = Config.PASSWORD.value
     lessons_id: list[int] = parse_numeric_array("1..50")
     regenerate_exercise_id: int = 0
+    is_clean_up_duplicates: bool = True if input('Clean up duplicates? y/n (default n):') == 'y' else False
+    if is_clean_up_duplicates:
+        clean_up_duplicates(file_paths)
     generate_all_levels: bool = True if input('Generate all levels? y/n (default n):') == 'y' else False
     generate_texts_of_all_levels: bool = False
     generate_lessons: bool = False
